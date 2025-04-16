@@ -22,6 +22,6 @@ urlpatterns = [
     path('',views.home,name='home'),
     path('signup/',views.signup,name='signup'),
     path('dashboard/',views.dashboard,name='dashboard'),
-    path("admin_dashboard/",views.admin_dashboard, name="admin_dashboard"),
     path('user_logout/',views.user_logout,name='logout'),
+    path('verify-otp/', views.verify_otp, name='verify_otp'),
 ]
