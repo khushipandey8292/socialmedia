@@ -15,13 +15,13 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
-from facebook import views
+from django.urls import path,include
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('',views.home,name='home'),
-    path('signup/',views.signup,name='signup'),
-    path('dashboard/',views.dashboard,name='dashboard'),
-    path('user_logout/',views.user_logout,name='logout'),
-    path('verify-otp/', views.verify_otp, name='verify_otp'),
+    path('',include('facebook.urls')),
+    # path('',views.home,name='home'),
+    # path('signup/',views.signup,name='signup'),
+    # path('login/',views.user_login,name='userlogin'),
+    # path('dashboard/',views.dashboard,name='dashboard'),
+    # path('user_logout/',views.user_logout,name='logout'),
 ]

@@ -69,7 +69,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'socialmedia.wsgi.application'
-
+AUTH_USER_MODEL = 'facebook.CustomUser'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
@@ -127,7 +127,5 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER ='khushipandey8292@gmail.com'
-EMAIL_HOST_PASSWORD = 'nktj zfir hdmr kjib'
-CELERY_BROKER_URL = 'redis://localhost:6379/0'
-CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TASK_SERIALIZER = 'json'
+EMAIL_HOST_PASSWORD = 'nktjzfirhdmrkjib'
+
