@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'facebook',
+    'captcha',
 ]
 
 MIDDLEWARE = [
@@ -106,7 +107,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Kolkata'
 
 USE_I18N = True
 
@@ -122,10 +123,25 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER ='khushipandey8292@gmail.com'
 EMAIL_HOST_PASSWORD = 'nktjzfirhdmrkjib'
+DEFAULT_FROM_EMAIL = 'khushipandey8292@gmail.com'
+CAPTCHA_IMAGE_SIZE = (150, 50)  
+CAPTCHA_FONT_SIZE = 36
+CAPTCHA_LENGTH = 4
 
+
+CAPTCHA_BACKGROUND_COLOR = '#eeeee4'     
+CAPTCHA_FOREGROUND_COLOR = '#063970'     
+
+CAPTCHA_NOISE_FUNCTIONS = (
+    'captcha.helpers.noise_dots',
+    'captcha.helpers.noise_arcs',
+)
+
+CAPTCHA_CHALLENGE_FUNCT = 'captcha.helpers.random_char_challenge'

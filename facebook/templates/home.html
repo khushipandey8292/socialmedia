@@ -24,4 +24,21 @@
       <img src="{% static 'image/img2.webp' %}" style="max-height:250px;border-radius:20px;" class="d-block w-100" alt="...">
     </div>  
 </div>
+</div>
+</div>
+<div class="row category mt-1 py-3" >
+  <div class="fs-3 heading" style="color:white;">Shop By <b>Categories</b></div>
+  {% for x in cdata %}  <!-- [row,row]-->
+<div class="col-lg-2 col-md-4 col-sm-12">
+<!-- start category-->
+<div class="card mt-2">
+  <img src="{% static 'image/fruits.jpg' %}" style="max-height:150px;"  class="card-img-top"/>
+  <div class="card-body">
+     <a href="image/?cid={{x.id}}" style="text-decoration:none;" id="cname"><p class="text-center"><b>{{x.cname}}</b></p></a>
+  </div>
+</div>
+<!-- end category-->
+</div>
+  {% endfor %}
+</div>
 {% endblock content %}
