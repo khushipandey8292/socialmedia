@@ -1,26 +1,17 @@
-{% extends 'base.html' %}
+{% extends 'base.html'%}
 {% load static %}
 {% block content %}
 <div class="text-center fs-2">
-    Our <b class="txt-mycolor">Product<i class="fa-brands fa-product-hunt"></i>
+    <b style="color:rgb(238, 235, 216);"> Our Product<i class="fa-brands fa-product-hunt"></i></b>
 </b>
 </div>
-<div class="row">
-    <div class="col-sm-3">
-    <ul class="list-group">
-  <li class="list-group-item bg-mycolor text- fs-3" style="font-family:FZShuTi;" aria-current="true">Sub Category</li>
-{% for i in subcat %}
- <a href="/image?sid={{i.id}}" style="text-decoration:none;font-family:STXinwei;"> <li class="list-group-item fs-3">{{i.subcategory_name}}</li></a>
-{% endfor %}
-</ul>
-    </div>
-<div class="col-sm-9">
+{% comment %} <div class="col-sm-12 "> {% endcomment %}
 <div class="row">
   {% for x in pdata %}
-        <div class="col-lg-3 col-md-6 col-sm-12">
+  <div class="col-6 col-sm-4 col-md-3 col-lg-2 mb-4">
             <!-- start product -->
             <div class="card mt-2">
-                <img src="/{{x.image_pic}}" class="card-img-top"/>
+                <img src="/{{x.product_pic}}" class="card-img-top"/>
                 <div class="card-body">
 <!--               <b>{{x.subcategory_name}}</b><br/>-->
                     <b>{{x.veg_name}}</b><br/>
@@ -42,7 +33,7 @@
                         <i class="fa-solid fa-plus"></i>
                     </b>
                 </div>
-                    <input type="submit" class="btn bg-mycolor text-light mt-1" value="Add"/>
+                    <input type="submit" class="btn bg-success text-dark mt-1" value="Add"/>
                 </form>
                 </div>
 
@@ -70,4 +61,6 @@
 </div>
     </div>
 </div>
-{% endblock content %}
+{% endblock content %} 
+
+

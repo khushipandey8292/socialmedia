@@ -5,49 +5,20 @@ from django.shortcuts import  redirect
 import random
 from django.core.mail import send_mail
 from django.contrib.auth.decorators import login_required
-from .models import CustomUser,UserOTP,Category,Subcategory,Myproduct
-from .forms import Myform ,OTPForm
+from .models import CustomUser,UserOTP,Category,Myproduct,Subcategory
+from .forms import Myform ,OTPForm,MyProductForm
 from .tasks import send_seller_status_email
 import string
 def home(request):
     data=Category.objects.all().order_by('-id')[0:18]
     md={"cdata":data}
-    # return render(request,'user/index.html',md)
     return render(request, 'home.html',md)
-
 
 def about(request):
     return render(request,'about.html')
 
 def generate_otp():
     return ''.join(random.choices(string.digits, k=6))
-
-def register_customer(request):
-    if request.method == "POST":
-        username = request.POST['username']
-        email = request.POST['email']
-        password = request.POST['password']
-
-        user = CustomUser.objects.create_user(
-            username=username,
-            email=email,
-            password=password,
-            user_type='customer',
-            is_verified=True  
-        )
-        otp = generate_otp()
-        UserOTP.objects.create(user=user, otp=otp)
-        send_mail(
-                subject='Your OTP for Account Verification',
-                message=f'Your OTP is {otp}',
-                from_email='your_email@gmail.com',
-                recipient_list=[user.email],
-            )
-        request.session['username'] = user.username  
-        messages.success(request, "OTP sent to your email.")
-        return redirect('verify_otp')
-    return render(request, 'register_customer.html')
-
 
 def verify_otp(request):
     username = request.session.get('username')
@@ -90,39 +61,59 @@ def verify_otp(request):
 
     return render(request, 'verify_otp.html', {'form': form})
 
-def register_seller(request):
+
+def register_user(request):
     if request.method == "POST":
         username = request.POST['username']
         email = request.POST['email']
         password = request.POST['password']
+        role = request.POST['role']
 
-        user = CustomUser.objects.create_user(
-            username=username,
-            email=email,
-            password=password,
-            user_type='seller',
-            is_verified=False
-        )
-        return HttpResponse("Seller registered successfully. Please wait for admin verification.")
-    return render(request, 'register_seller.html')
+        if role == 'customer':
+            user = CustomUser.objects.create_user(
+                username=username,
+                email=email,
+                password=password,
+                user_type='customer',
+                is_verified=True  
+            )
+            otp = generate_otp()
+            UserOTP.objects.create(user=user, otp=otp)
+            send_mail(
+                subject='Your OTP for Account Verification',
+                message=f'Your OTP is {otp}',
+                from_email='your_email@gmail.com',
+                recipient_list=[user.email],
+            )
+            request.session['username'] = user.username
+            messages.success(request, "OTP sent to your email.")
+            return redirect('verify_otp')
 
+        elif role == 'seller':
+            user = CustomUser.objects.create_user(
+                username=username,
+                email=email,
+                password=password,
+                user_type='seller',
+                is_verified=False 
+            )
+            return HttpResponse("Seller registered successfully. Please wait for admin verification.")
 
-def register_admin(request):
-    if request.method == "POST":
-        username = request.POST['username']
-        email = request.POST['email']
-        password = request.POST['password']
+        elif role == 'admin':
+            user = CustomUser.objects.create_superuser(
+                username=username,
+                email=email,
+                password=password,
+                user_type='admin',
+                is_verified=True
+            )
+            return redirect('login')
 
-        user = CustomUser.objects.create_superuser(
-            username=username,
-            email=email,
-            password=password,
-            user_type='admin',
-            is_verified=True  
-        )
-        return redirect('login')
-    return render(request, 'register_admin.html')
+        else:
+            messages.error(request, "Invalid role selected.")
+            return redirect('register_user')
 
+    return render(request, 'register_user.html')
 
 
 def user_login(request):
@@ -132,42 +123,81 @@ def user_login(request):
         if form.is_valid():
             username = request.POST.get('username')
             password = request.POST.get('password')
+            role = request.POST.get('role')  
 
             user = authenticate(request, username=username, password=password)
 
             if user is not None:
-                if user.user_type == 'seller':
+                if user.user_type != role:
+                    return render(request, 'login.html', {
+                        'form': form,
+                        'error': 'Invalid role selected for this account.'
+                    })
+
+                if role == 'seller':
                     if not user.is_verified:
                         return HttpResponse("Seller account not verified by admin yet.")
                     else:
                         login(request, user)
-                        return redirect('dashboard')
-                elif user.user_type in ['admin', 'customer']:
+                        return redirect('seller_dashboard')
+                elif role == 'customer':
                     login(request, user)
-                    return redirect('dashboard')
+                    return redirect('customer_dashboard')
+                elif role == 'admin':
+                    login(request, user)
+                    return redirect('admin_dashboard')
+                else:
+                    return render(request, 'login.html', {
+                        'form': form,
+                        'error': 'Invalid role.'
+                    })
             else:
-                return render(request, 'login.html', {'form': form, 'error': 'Invalid credentials'})
+                return render(request, 'login.html', {
+                    'form': form,
+                    'error': 'Invalid username or password.'
+                })
         else:
-            return render(request, 'login.html', {'form': form, 'error': 'Invalid captcha'})
+            return render(request, 'login.html', {
+                'form': form,
+                'error': 'Invalid form submission.'
+            })
+
     return render(request, 'login.html', {'form': form})
 
 
-@login_required
-def dashboard(request):
-    user = request.user
-    if user.user_type == 'admin':
-        sellers = CustomUser.objects.filter(user_type='seller')
-        customers = CustomUser.objects.filter(user_type='customer')
-        return render(request, 'admin_dashboard.html', {'sellers': sellers,'customers': customers})
-        # unverified_sellers = CustomUser.objects.filter(user_type='seller', is_verified=False)
-        # return render(request, 'admin_dashboard.html', {'unverified_sellers': unverified_sellers})
-    elif user.user_type == 'seller':
-        return render(request, 'seller_dashboard.html')
-    elif user.user_type == 'customer':
-        return render(request, 'customer_dashboard.html')
-    else:
-        return HttpResponse("Unknown user type.")
+def seller_required(view_func):
+    def wrapper(request, *args, **kwargs):
+        if request.user.is_authenticated and request.user.user_type == 'seller':
+            return view_func(request, *args, **kwargs)
+        return redirect('login')
+    return wrapper
 
+def admin_required(view_func):
+    def wrapper(request, *args, **kwargs):
+        if request.user.is_authenticated and request.user.user_type == 'admin':
+            return view_func(request, *args, **kwargs)
+        return redirect('login')
+    return wrapper
+
+
+
+@login_required
+@seller_required
+def seller_dashboard(request):
+    products = Myproduct.objects.filter(seller=request.user)
+    return render(request, 'seller_dashboard.html', {'products': products})
+
+@login_required
+def customer_dashboard(request):
+    return render(request, 'customer_dashboard.html')
+
+@admin_required
+@login_required
+def admin_dashboard(request):
+    sellers = CustomUser.objects.filter(user_type='seller')
+    customers = CustomUser.objects.filter(user_type='customer')
+    products = Myproduct.objects.all()
+    return render(request, 'admin_dashboard.html',{'sellers': sellers,'customers': customers,'products': products})
 
 @login_required
 def approve_seller(request, seller_id):
@@ -178,7 +208,7 @@ def approve_seller(request, seller_id):
     seller.is_verified = True
     seller.save()
     send_seller_status_email.delay(seller.email, 'approved')
-    return redirect('dashboard')
+    return redirect('admin_dashboard') 
 
 @login_required
 def unapprove_seller(request, seller_id):
@@ -189,7 +219,7 @@ def unapprove_seller(request, seller_id):
     seller.is_verified = False
     seller.save()
     send_seller_status_email.delay(seller.email, 'unapproved')
-    return redirect('dashboard') 
+    return redirect('admin_dashboard') 
 
 @login_required
 def delete_seller(request, seller_id):
@@ -198,8 +228,7 @@ def delete_seller(request, seller_id):
     
     seller = get_object_or_404(CustomUser, id=seller_id, user_type='seller')
     seller.delete()
-    return redirect('dashboard')
-
+    return redirect('admin_dashboard') 
 
 @login_required
 def delete_customer(request, customer_id):
@@ -226,3 +255,42 @@ def product(request):
         pdata=Myproduct.objects.all().order_by('-id')
     md={"subcat":sdata,"pdata":pdata}
     return render(request,'product.html',md)
+
+
+@login_required
+@seller_required
+def add_product(request):
+    form = MyProductForm(request.POST or None, request.FILES or None)
+    if form.is_valid():
+        product = form.save(commit=False)
+        product.seller = request.user
+        product.save()
+        return redirect('seller_dashboard')
+    return render(request, 'product_form.html', {'form': form})
+
+@login_required
+@seller_required
+def edit_product(request, pk):
+    product = get_object_or_404(Myproduct, pk=pk, seller=request.user)
+    form = MyProductForm(request.POST or None, request.FILES or None, instance=product)
+    if form.is_valid():
+        form.save()
+        return redirect('seller_dashboard')
+    return render(request, 'product_form.html', {'form': form,'is_edit': True})
+
+@login_required
+@seller_required
+def delete_product(request, pk):
+    product = get_object_or_404(Myproduct, pk=pk, seller=request.user)
+    product.delete()
+    return redirect('seller_dashboard')
+
+
+@login_required
+@admin_required
+def delete_product_admin(request, pk):
+    product = get_object_or_404(Myproduct, pk=pk)
+    product.delete()
+    return redirect('admin_dashboard')
+
+

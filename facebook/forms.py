@@ -1,4 +1,5 @@
 from django import forms
+from .models import Myproduct
 from captcha.fields import CaptchaField
 
 class OTPForm(forms.Form):
@@ -10,3 +11,9 @@ class OTPForm(forms.Form):
     
 class Myform(forms.Form):
     captcha=CaptchaField()
+  
+
+class MyProductForm(forms.ModelForm):
+    class Meta:
+        model = Myproduct
+        exclude = ['seller']

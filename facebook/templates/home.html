@@ -3,7 +3,7 @@
 {% block content %}
 <div class="row slider mt-3">
     <div class="col-sm-5">
-        <img src="{% static 'image/img1.jpg' %}" style="max-height:250px; max-width:700px; border-radius:10px;" id="offer" class="img-fluid w-100"/>
+        <img src="{% static '/category/image/img1.jpg' %}" style="max-height:250px; max-width:700px; border-radius:10px;" id="offer" class="img-fluid w-100"/>
     </div>
         <div class="col-sm-7 p-1">
             <!-- start slider -->
@@ -15,26 +15,27 @@
   </div>
   <div class="carousel-inner">
     <div class="carousel-item active">
-      <img src="{% static 'image/qr.jpg' %}" style="max-height:250px;border-radius:20px;" class="d-block w-100" alt="...">
+      <img src="{% static '/category/image/qr.jpg' %}" style="max-height:250px;border-radius:20px;" class="d-block w-100" alt="...">
     </div>
     <div class="carousel-item active">
-      <img src="{% static 'image/img5.jpeg' %}" style="max-height:250px;border-radius:20px;" class="d-block w-100" alt="...">
+      <img src="{% static '/category/image/img5.jpeg' %}" style="max-height:250px;border-radius:20px;" class="d-block w-100" alt="...">
     </div>
     <div class="carousel-item active">
-      <img src="{% static 'image/img2.webp' %}" style="max-height:250px;border-radius:20px;" class="d-block w-100" alt="...">
+      <img src="{% static '/category/image/img2.webp' %}" style="max-height:250px;border-radius:20px;" class="d-block w-100" alt="...">
     </div>  
 </div>
 </div>
 </div>
-<div class="row category mt-1 py-3" >
-  <div class="fs-3 heading" style="color:white;">Shop By <b>Categories</b></div>
+<div class="row category mt-1 py-3 ms-3 bg-light">
+{% comment %} <div class="row category mt-1 py-3 " style="background-color:rgba(8, 4, 31, 0.58);"> {% endcomment %}
+  <div class="fs-3 heading" style="color:dark;">Shop By <b>Categories</b></div>
   {% for x in cdata %}  <!-- [row,row]-->
 <div class="col-lg-2 col-md-4 col-sm-12">
 <!-- start category-->
 <div class="card mt-2">
-  <img src="{% static 'image/fruits.jpg' %}" style="max-height:150px;"  class="card-img-top"/>
+  <img src="/{{x.cpic}}" style="max-height:150px;"  class="card-img-top"/>
   <div class="card-body">
-     <a href="image/?cid={{x.id}}" style="text-decoration:none;" id="cname"><p class="text-center"><b>{{x.cname}}</b></p></a>
+     <a href="/product/?cid={{x.id}}" style="text-decoration:none;" id="cname"><p class="text-center"><b>{{x.cname}}</b></p></a>
   </div>
 </div>
 <!-- end category-->

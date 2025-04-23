@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import CustomUser,UserOTP,Category,Subcategory,Myproduct
+from .models import CustomUser,UserOTP, Category,Myproduct,Subcategory,MyCart
 
 class CustomUserAdmin(UserAdmin):
     model = CustomUser
@@ -19,16 +19,21 @@ class UserOTPAdmin(admin.ModelAdmin):
     list_display=['id','user','otp','created_at']
     
 @admin.register(Category)
-class CategoryAdmin(admin.ModelAdmin):
+class categoryAdmin(admin.ModelAdmin):
     list_display = ('id','cname','cpic','cdate')
 
 @admin.register(Subcategory)
-class SubcategoryAdmin(admin.ModelAdmin):
+class subcategoryAdmin(admin.ModelAdmin):
     list_display = ('id','category_name','subcategory_name')
 
-@admin.register(Myproduct)
-class MyproductAdmin(admin.ModelAdmin):
-    list_display = ('id','product_category',
-                    'subcategory_name', 'veg_name','price','discount_price',
-                    'product_pic','total_discount','product_quantity','pdate');
 
+@admin.register(Myproduct)
+class myproductAdmin(admin.ModelAdmin):
+    list_display = ('id','seller','product_category',
+                    'subcategory_name', 'veg_name','price','discount_price',
+                    'product_pic','total_discount','product_quantity','pdate')
+
+
+@admin.register(MyCart)
+class MyCartAdmin(admin.ModelAdmin):
+    list_display = ['id', 'user', 'product_name', 'product_price', 'product_quantity', 'quantity', 'added_on']
