@@ -1,6 +1,17 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block content %}
-<div class="col-sm-5" style="margin-top:50px;">
-<h2 style="color:rgb(224, 212, 134);">Welcome Customer: {{ request.user.username }}</h2>
+  <div class="container mt-5 d-flex justify-content-center">
+    <div class="card shadow-lg" style="max-width: 24rem;">
+      <div class="card-body text-center">
+        <h5 class="card-title">Ready to shop?</h5>
+        <a href="{% url 'products' %}" class="btn btn-success">
+          <i class="fa-solid fa-cart-shopping me-2"></i>Shop Products
+        </a>
+      </div>
+    </div>
+  </div>
 {% endblock content %}
+
+
+

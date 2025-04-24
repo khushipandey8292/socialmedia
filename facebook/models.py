@@ -13,7 +13,7 @@ class CustomUser(AbstractUser):
     phone = models.CharField(max_length=15, blank=True, null=True)
     address = models.TextField(blank=True, null=True)  
     def __str__(self):
-        return f"{self.username} ({self.user_type})"
+        return f"{self.username}"
 
 class UserOTP(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
@@ -54,14 +54,39 @@ class Myproduct(models.Model):
     product_quantity=models.CharField(max_length=200)
     pdate=models.DateField()
     
-class MyCart(models.Model):
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    product_name = models.CharField(max_length=100)
-    product_price = models.IntegerField()
-    product_quantity = models.CharField(max_length=50)
-    product_pic = models.ImageField(upload_to='cartpics/')
-    quantity = models.IntegerField(default=1)
-    added_on = models.DateTimeField(auto_now_add=True)
-
+class Cart(models.Model):
+    user=models.ForeignKey(CustomUser,on_delete=models.CASCADE)
+    product_name=models.CharField(max_length=200)
+    quantity=models.IntegerField(null=True)
+    price=models.IntegerField(null=True)
+    total_price=models.FloatField(null=True)
+    product_picture=models.CharField(max_length=300,null=True)
+    pw=models.CharField(max_length=200,null=True)
+    added_date=models.DateField()
+    
     def __str__(self):
-        return f"{self.user.username} - {self.product_name}"
+        return f"{self.product_name} x {self.quantity} for {self.user}"
+
+class Myorders(models.Model):
+    STATUS_CHOICES = [
+        ("Pending", "Pending"),
+        ("Accepted", "Accepted"),
+        ("Delivered", "Delivered"),
+        ("Cancelled", "Cancelled"),
+    ]
+    user=models.ForeignKey(CustomUser,on_delete=models.CASCADE)
+    product_name = models.CharField(max_length=200)
+    quantity = models.IntegerField(null=True)
+    price = models.IntegerField(null=True)
+    total_price = models.FloatField(null=True)
+    product_picture = models.CharField(max_length=300, null=True)
+    pw = models.CharField(max_length=200, null=True)
+    order_date = models.DateField(null=True)
+    status=models.CharField(max_length=200,null=True,default="Pending")
+    
+    def __str__(self):
+        return f"Order by {self.user} - {self.product_name} ({self.status})"
+
+
+
+    

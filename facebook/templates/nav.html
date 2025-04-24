@@ -35,10 +35,33 @@
             </li> 
           {% endif %}
         </ul>
-        <form class="d-flex" role="search">
+        {% if request.user.is_authenticated %}
+        <span class="navbar-text text-danger fs-3 ms-4">
+          Welcome, {{ request.user.username }}
+        </span>
+        {% endif %}
+        <div class="d-flex align-items-center">
+          {% if request.user.is_authenticated and request.user.user_type == 'customer' %}
+            <a href="/cartitem/" class="btn btn-sm bg-mycolor text-dark me-2">
+              Cart <i class="fa-solid fa-cart-shopping"></i>
+              <b class="badge text-bg-dark">
+                {{ request.session.cartitem|default:0 }}
+              </b>
+            </a>
+            <a href="/orderslist/" class="btn btn-sm bg-mycolor text-dark">
+              My Orders <i class="fa-solid fa-truck-fast"></i>
+            </a>
+          {% comment %} {% else %}
+            <a href="/cartitem/" class="btn btn-sm bg-mycolor text-dark me-2">
+              Cart <i class="fa-solid fa-cart-shopping"></i>
+              <b class="badge text-bg-light">0</b>
+            </a> {% endcomment %}
+          {% endif %}
+        </div>       
+        {% comment %} <form class="d-flex" role="search">
           <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
           <button class="btn btn-outline-success" type="submit">Search</button>
-        </form>
+        </form> {% endcomment %}
       </div>
     </div>
   </nav>

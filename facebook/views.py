@@ -3,9 +3,10 @@ from django.contrib import messages
 from django.contrib.auth import authenticate,login,logout
 from django.shortcuts import  redirect
 import random
+import datetime
 from django.core.mail import send_mail
 from django.contrib.auth.decorators import login_required
-from .models import CustomUser,UserOTP,Category,Myproduct,Subcategory
+from .models import CustomUser,UserOTP,Category,Myproduct,Subcategory,Cart,Myorders
 from .forms import Myform ,OTPForm,MyProductForm
 from .tasks import send_seller_status_email
 import string
@@ -179,8 +180,6 @@ def admin_required(view_func):
         return redirect('login')
     return wrapper
 
-
-
 @login_required
 @seller_required
 def seller_dashboard(request):
@@ -294,3 +293,132 @@ def delete_product_admin(request, pk):
     return redirect('admin_dashboard')
 
 
+from django.utils import timezone
+
+@login_required
+def Mycart(request):
+    if request.user.user_type != 'customer':
+        return HttpResponse("<script>alert('Only customers can access the cart');location.href='/'</script>")
+
+    if request.method == "GET" and request.GET.get('qt'):
+        qt = int(request.GET.get('qt'))
+        pname = request.GET.get('pname')
+        ppic = request.GET.get('ppic')
+        pw = request.GET.get('pw')
+        price = int(request.GET.get('price'))
+        total_price = qt * price
+
+        if qt > 0:
+            Cart.objects.create(
+                user=request.user,
+                product_name=pname,
+                quantity=qt,
+                price=price,
+                total_price=total_price,
+                product_picture=ppic,
+                pw=pw,
+                added_date=timezone.now().date()
+            )
+            request.session['cartitem'] = Cart.objects.filter(user=request.user).count()
+            return HttpResponse("<script>alert('Your item was added successfully');location.href='/product/'</script>")
+        else:
+            return HttpResponse("<script>alert('Add product quantity to your cart');location.href='/product/'</script>")
+
+    return render(request, 'mycart.html')
+
+
+@login_required
+def cartitem(request):
+    if request.user.user_type != 'customer':
+        return HttpResponse("<script>alert('Only customers can view the cart');location.href='/'</script>")
+
+    cid = request.GET.get('cid')
+    cartdata = Cart.objects.filter(user=request.user)
+
+    if cid:
+        Cart.objects.filter(id=cid, user=request.user).delete()
+        request.session['cartitem'] = Cart.objects.filter(user=request.user).count()
+        return HttpResponse("<script>alert('Item successfully removed');location.href='/cartitem/'</script>")
+
+    return render(request, 'cartitem.html', {"cartdata": cartdata})
+
+
+@login_required
+def myorder(request):
+    if request.user.user_type != 'customer':
+        return HttpResponse("<script>alert('Only customers can place orders');location.href='/'</script>")
+
+    msg = request.GET.get('msg')
+    if msg:
+        cart_items = Cart.objects.filter(user=request.user)
+        for item in cart_items:
+            Myorders.objects.create(
+                user=request.user,
+                product_name=item.product_name,
+                quantity=item.quantity,
+                price=item.price,
+                total_price=item.total_price,
+                product_picture=item.product_picture,
+                pw=item.pw,
+                status="Pending",
+                order_date=timezone.now().date()
+            )
+        cart_items.delete()
+        request.session['cartitem'] = 0
+        return HttpResponse("<script>alert('Your order has been placed successfully!');location.href='/orderslist/'</script>")
+
+    return render(request, 'order.html')
+
+
+@login_required
+def indexcart(request):
+    if request.user.user_type != 'customer':
+        return HttpResponse("<script>alert('Only customers can add items to cart');location.href='/'</script>")
+
+    if request.GET.get('qt'):
+        qt = int(request.GET.get('qt'))
+        pname = request.GET.get('pname')
+        ppic = request.GET.get('ppic')
+        pw = request.GET.get('pw')
+        price = int(request.GET.get('price'))
+        total_price = qt * price
+
+        if qt > 0:
+            Cart.objects.create(
+                user=request.user,
+                product_name=pname,
+                quantity=qt,
+                price=price,
+                total_price=total_price,
+                product_picture=ppic,
+                pw=pw,
+                added_date=timezone.now().date()
+            )
+            request.session['cartitem'] = Cart.objects.filter(user=request.user).count()
+            return HttpResponse("<script>alert('Your item was added in cart');location.href='/index/'</script>")
+        else:
+            return HttpResponse("<script>alert('Add product quantity to your cart');location.href='/index/'</script>")
+
+    return render(request, 'indexcart.html')
+
+
+@login_required
+def orderslist(request):
+    if request.user.user_type != 'customer':
+        return HttpResponse("<script>alert('Only customers can view orders');location.href='/'</script>")
+
+    oid = request.GET.get('oid')
+
+    if oid:
+        Myorders.objects.filter(id=oid, user=request.user).delete()
+        return HttpResponse("<script>alert('Order canceled');location.href='/orderslist/'</script>")
+
+    pdata = Myorders.objects.filter(user=request.user, status="Pending")
+    adata = Myorders.objects.filter(user=request.user, status="Accepted")
+    ddata = Myorders.objects.filter(user=request.user, status="Delivered")
+
+    return render(request, 'orderlist.html', {
+        "pdata": pdata,
+        "adata": adata,
+        "ddata": ddata
+    })
