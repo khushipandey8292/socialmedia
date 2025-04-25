@@ -17,3 +17,30 @@ class MyProductForm(forms.ModelForm):
     class Meta:
         model = Myproduct
         exclude = ['seller']
+
+
+from .models import Category, Subcategory
+from datetime import date
+
+class CategoryForm(forms.ModelForm):
+    class Meta:
+        model = Category
+        fields = ['cname', 'cpic', 'cdate']  
+
+    cdate = forms.DateField(
+        widget=forms.DateInput(attrs={'type': 'date'})
+    )
+
+class SubcategoryForm(forms.ModelForm):
+    class Meta:
+        model = Subcategory
+        fields = '__all__'
+
+from django import forms
+
+class AddressForm(forms.Form):
+    full_name = forms.CharField(max_length=100, label='Full Name')
+    phone = forms.CharField(max_length=15, label='Phone Number')
+    address = forms.CharField(widget=forms.Textarea, label='Shipping Address')
+    city = forms.CharField(max_length=50, label='City')
+    postal_code = forms.CharField(max_length=10, label='Postal Code')

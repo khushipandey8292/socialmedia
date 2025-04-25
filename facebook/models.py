@@ -28,6 +28,7 @@ class UserOTP(models.Model):
         return timezone.now() > self.created_at + timezone.timedelta(minutes=10) 
 
 class Category(models.Model):
+    seller = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True)
     cname=models.CharField(max_length=200,null=True)
     cpic=models.ImageField(upload_to='static/category/',null=True)
     cdate=models.DateField()

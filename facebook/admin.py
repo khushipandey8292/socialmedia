@@ -20,7 +20,7 @@ class UserOTPAdmin(admin.ModelAdmin):
     
 @admin.register(Category)
 class categoryAdmin(admin.ModelAdmin):
-    list_display = ('id','cname','cpic','cdate')
+    list_display = ('id','seller','cname','cpic','cdate')
 
 @admin.register(Subcategory)
 class subcategoryAdmin(admin.ModelAdmin):

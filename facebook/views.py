@@ -4,6 +4,7 @@ from django.contrib.auth import authenticate,login,logout
 from django.shortcuts import  redirect
 import random
 import datetime
+from .forms import AddressForm ,CategoryForm, SubcategoryForm
 from django.core.mail import send_mail
 from django.contrib.auth.decorators import login_required
 from .models import CustomUser,UserOTP,Category,Myproduct,Subcategory,Cart,Myorders
@@ -257,6 +258,41 @@ def product(request):
 
 
 @login_required
+def add_category(request):
+    if request.user.user_type != 'seller':
+        return redirect('home')
+    
+    if request.method == "POST":
+        form = CategoryForm(request.POST, request.FILES)
+        if form.is_valid():
+            category = form.save(commit=False)
+            category.seller = request.user
+            category.save()
+            return redirect('seller_dashboard')
+    else:
+        form = CategoryForm()
+    
+    return render(request, 'category.html', {'form': form})
+
+
+
+@login_required
+def add_subcategory(request):
+    if request.user.user_type != 'seller':
+        return HttpResponse("<script>alert('Only sellers can add subcategories');location.href='/'</script>")
+    
+    if request.method == 'POST':
+        form = SubcategoryForm(request.POST)
+        if form.is_valid():
+            form.save()  # Save the subcategory
+            return redirect('seller_dashboard')  # Redirect to the seller dashboard after saving
+    else:
+        form = SubcategoryForm()
+    
+    return render(request, 'subcategory.html', {'form': form})
+
+
+@login_required
 @seller_required
 def add_product(request):
     form = MyProductForm(request.POST or None, request.FILES or None)
@@ -347,7 +383,6 @@ def cartitem(request):
 def myorder(request):
     if request.user.user_type != 'customer':
         return HttpResponse("<script>alert('Only customers can place orders');location.href='/'</script>")
-
     msg = request.GET.get('msg')
     if msg:
         cart_items = Cart.objects.filter(user=request.user)
@@ -361,7 +396,8 @@ def myorder(request):
                 product_picture=item.product_picture,
                 pw=item.pw,
                 status="Pending",
-                order_date=timezone.now().date()
+                order_date=timezone.now().date(),
+                
             )
         cart_items.delete()
         request.session['cartitem'] = 0
@@ -422,3 +458,58 @@ def orderslist(request):
         "adata": adata,
         "ddata": ddata
     })
+
+# @login_required
+# def place_order(request):
+#     if request.user.user_type != 'customer':
+#         return HttpResponse("<script>alert('Only customers can place orders');location.href='/'</script>")
+
+#     if request.method == 'POST':
+#         street = request.POST.get('street')
+#         city = request.POST.get('city')
+#         zip_code = request.POST.get('zip')
+
+#         product_name = request.POST.get('product_name')
+#         quantity = int(request.POST.get('quantity'))
+#         quantity = request.POST.get('quantity')
+#         price = float(request.POST.get('price'))
+#         total_price = float(request.POST.get('total_price'))
+#         product_picture = request.POST.get('product_picture')
+#         pw = request.POST.get('pw')
+
+#         full_address = f"{street}, {city}, {zip_code}"
+
+#         Myorders.objects.create(
+#             user=request.user,
+#             product_name=product_name,
+#             quantity=quantity,
+#             price=price,
+#             total_price=total_price,
+#             product_picture=product_picture,
+#             pw=pw,
+#             order_date=timezone.now().date(),
+#             status="Pending"
+#         )
+
+#         return HttpResponse("<script>alert('Order placed successfully!');location.href='/orderslist/'</script>")
+
+#     # Pre-fill product data when GET request is sent
+#     return render(request, 'address_form.html', {
+#         'product_name': request.GET.get('product_name'),
+#         'quantity': request.GET.get('quantity'),
+#         'price': request.GET.get('price'),
+#         'total_price': request.GET.get('total_price'),
+#         'product_picture': request.GET.get('product_picture'),
+#         'pw': request.GET.get('pw'),
+#     })
+
+@login_required
+def delete_category(request, cid):
+    category = get_object_or_404(Category, id=cid, seller=request.user)
+    
+    if request.user.user_type != 'seller':
+        return HttpResponse("<script>alert('Unauthorized access');location.href='/'</script>")
+    
+    category.delete()
+    return redirect('seller_dashboard')
+

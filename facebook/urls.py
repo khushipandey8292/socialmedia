@@ -15,6 +15,8 @@ urlpatterns = [
     path('unapprove-seller/<int:seller_id>/', views.unapprove_seller, name='unapprove_seller'),
     path('delete-seller/<int:seller_id>/', views.delete_seller, name='delete_seller'),
     path('delete_customer/<int:customer_id>/', views.delete_customer, name='delete_customer'),
+    path('add-subcategory/', views.add_subcategory, name='subcategory'),
+    path('category/', views.add_category, name='category'),
     path('product/',views.product,name='products'),
     path('seller/add/', views.add_product, name='add_product'),
     path('seller/edit/<int:pk>/', views.edit_product, name='edit_product'),
@@ -24,6 +26,8 @@ urlpatterns = [
     path('cartitem/', views.cartitem, name='cartitem'),
     path('indexcart/', views.indexcart, name='indexcart'),
     path('myorder/', views.myorder, name='myorder'),
-    path('orderslist/', views.orderslist, name='orderslist'),
+    path('orderslist/', views.orderslist, name='orderslist'), 
+    path('delete-category/<int:cid>/', views.delete_category, name='delete_category'), 
+    # path('place-order/', views.place_order, name='myorder'),
 ]
 
