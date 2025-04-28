@@ -10,3 +10,6 @@ def send_seller_status_email(email, status):
     recipient_list = [email]
 
     send_mail(subject, message, from_email, recipient_list)
+
+
+

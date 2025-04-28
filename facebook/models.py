@@ -35,6 +35,12 @@ class Category(models.Model):
     def __str__(self):
         return  self.cname
     
+    def can_be_deleted_by(self, seller):
+        # Only allow the seller to delete if no other seller has products in this category
+        if self.product_set.filter(seller__isnull=False).exclude(seller=seller).exists():
+            return False
+        return True
+    
 class Subcategory(models.Model):
     category_name=models.ForeignKey(Category,on_delete=models.CASCADE)
     subcategory_name=models.CharField(max_length=100,null=True)
@@ -84,9 +90,15 @@ class Myorders(models.Model):
     pw = models.CharField(max_length=200, null=True)
     order_date = models.DateField(null=True)
     status=models.CharField(max_length=200,null=True,default="Pending")
-    
+    address = models.TextField(null=True)
+    city = models.CharField(max_length=100, null=True)
+    state = models.CharField(max_length=100, null=True)
+    zip_code = models.CharField(max_length=10, null=True)
+    phone_number = models.CharField(max_length=15, null=True)
+
     def __str__(self):
         return f"Order by {self.user} - {self.product_name} ({self.status})"
+   
 
 
 

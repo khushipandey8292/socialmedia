@@ -27,7 +27,7 @@ urlpatterns = [
     path('indexcart/', views.indexcart, name='indexcart'),
     path('myorder/', views.myorder, name='myorder'),
     path('orderslist/', views.orderslist, name='orderslist'), 
-    path('delete-category/<int:cid>/', views.delete_category, name='delete_category'), 
+    path('delete-category/<int:cid>/', views.delete_category, name='delete_category'),
     # path('place-order/', views.place_order, name='myorder'),
 ]
 

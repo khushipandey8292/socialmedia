@@ -11,6 +11,7 @@ from .models import CustomUser,UserOTP,Category,Myproduct,Subcategory,Cart,Myord
 from .forms import Myform ,OTPForm,MyProductForm
 from .tasks import send_seller_status_email
 import string
+
 def home(request):
     data=Category.objects.all().order_by('-id')[0:18]
     md={"cdata":data}
@@ -275,7 +276,6 @@ def add_category(request):
     return render(request, 'category.html', {'form': form})
 
 
-
 @login_required
 def add_subcategory(request):
     if request.user.user_type != 'seller':
@@ -284,8 +284,8 @@ def add_subcategory(request):
     if request.method == 'POST':
         form = SubcategoryForm(request.POST)
         if form.is_valid():
-            form.save()  # Save the subcategory
-            return redirect('seller_dashboard')  # Redirect to the seller dashboard after saving
+            form.save() 
+            return redirect('seller_dashboard')  
     else:
         form = SubcategoryForm()
     
@@ -378,32 +378,101 @@ def cartitem(request):
 
     return render(request, 'cartitem.html', {"cartdata": cartdata})
 
+from .forms import AddressForm 
+from io import BytesIO
+from xhtml2pdf import pisa
+from django.template.loader import render_to_string
+import os
+from django.conf import settings
+def generate_order_pdf(order_list, total_amount):
+    if not order_list:
+        return None
+
+    html = render_to_string('order_receipt.html', {
+        'orders': order_list,
+        'user': order_list[0].user,  # use first order's user
+        'address': order_list[0].address,
+        'city': order_list[0].city,
+        'state': order_list[0].state,
+        'zip_code': order_list[0].zip_code,
+        'phone_number': order_list[0].phone_number,
+        'total_amount': total_amount,
+    })
+
+    pdf_file = BytesIO()
+    pisa_status = pisa.CreatePDF(html, dest=pdf_file)
+
+    if pisa_status.err:
+        return None
+
+    pdf_path = f'{settings.MEDIA_ROOT}/order_receipts/receipt_{order_list[0].user.id}.pdf'
+    os.makedirs(os.path.dirname(pdf_path), exist_ok=True)
+
+    with open(pdf_path, 'wb') as f:
+        f.write(pdf_file.getvalue())
+
+    return pdf_path
+
+
 
 @login_required
 def myorder(request):
     if request.user.user_type != 'customer':
         return HttpResponse("<script>alert('Only customers can place orders');location.href='/'</script>")
-    msg = request.GET.get('msg')
-    if msg:
-        cart_items = Cart.objects.filter(user=request.user)
-        for item in cart_items:
-            Myorders.objects.create(
-                user=request.user,
-                product_name=item.product_name,
-                quantity=item.quantity,
-                price=item.price,
-                total_price=item.total_price,
-                product_picture=item.product_picture,
-                pw=item.pw,
-                status="Pending",
-                order_date=timezone.now().date(),
-                
-            )
-        cart_items.delete()
-        request.session['cartitem'] = 0
-        return HttpResponse("<script>alert('Your order has been placed successfully!');location.href='/orderslist/'</script>")
 
-    return render(request, 'order.html')
+    if request.method == 'POST':
+        form = AddressForm(request.POST)
+        if form.is_valid():
+            address = form.cleaned_data['address']
+            city = form.cleaned_data['city']
+            state = form.cleaned_data['state']
+            zip_code = form.cleaned_data['zip_code']
+            phone_number = form.cleaned_data['phone_number']
+
+            cart_items = Cart.objects.filter(user=request.user)
+            total_amount = 0
+
+            # Create orders
+            order_list = []
+            for item in cart_items:
+                order = Myorders.objects.create(
+                    user=request.user,
+                    product_name=item.product_name,
+                    quantity=item.quantity,
+                    price=item.price,
+                    total_price=item.total_price,
+                    product_picture=item.product_picture,
+                    pw=item.pw,
+                    status="Pending",
+                    order_date=timezone.now().date(),
+                    address=address,
+                    city=city,
+                    state=state,
+                    zip_code=zip_code,
+                    phone_number=phone_number,
+                )
+                order_list.append(order)
+                total_amount += item.total_price
+
+            cart_items.delete()
+            request.session['cartitem'] = 0
+
+        
+            pdf_path = generate_order_pdf(order_list, total_amount)
+
+            if pdf_path:
+                with open(pdf_path, 'rb') as pdf_file:
+                    response = HttpResponse(pdf_file.read(), content_type='application/pdf')
+                    response['Content-Disposition'] = f'inline; filename="receipt_{request.user.id}.pdf"'
+                    return response
+
+            return HttpResponse("<script>alert('Your order has been placed successfully!');location.href='/orderslist/'</script>")
+    
+    else:
+        form = AddressForm()
+
+    return render(request, 'order.html', {'form': form})
+
 
 
 @login_required
@@ -459,49 +528,7 @@ def orderslist(request):
         "ddata": ddata
     })
 
-# @login_required
-# def place_order(request):
-#     if request.user.user_type != 'customer':
-#         return HttpResponse("<script>alert('Only customers can place orders');location.href='/'</script>")
 
-#     if request.method == 'POST':
-#         street = request.POST.get('street')
-#         city = request.POST.get('city')
-#         zip_code = request.POST.get('zip')
-
-#         product_name = request.POST.get('product_name')
-#         quantity = int(request.POST.get('quantity'))
-#         quantity = request.POST.get('quantity')
-#         price = float(request.POST.get('price'))
-#         total_price = float(request.POST.get('total_price'))
-#         product_picture = request.POST.get('product_picture')
-#         pw = request.POST.get('pw')
-
-#         full_address = f"{street}, {city}, {zip_code}"
-
-#         Myorders.objects.create(
-#             user=request.user,
-#             product_name=product_name,
-#             quantity=quantity,
-#             price=price,
-#             total_price=total_price,
-#             product_picture=product_picture,
-#             pw=pw,
-#             order_date=timezone.now().date(),
-#             status="Pending"
-#         )
-
-#         return HttpResponse("<script>alert('Order placed successfully!');location.href='/orderslist/'</script>")
-
-#     # Pre-fill product data when GET request is sent
-#     return render(request, 'address_form.html', {
-#         'product_name': request.GET.get('product_name'),
-#         'quantity': request.GET.get('quantity'),
-#         'price': request.GET.get('price'),
-#         'total_price': request.GET.get('total_price'),
-#         'product_picture': request.GET.get('product_picture'),
-#         'pw': request.GET.get('pw'),
-#     })
 
 @login_required
 def delete_category(request, cid):

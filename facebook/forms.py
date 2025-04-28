@@ -36,11 +36,11 @@ class SubcategoryForm(forms.ModelForm):
         model = Subcategory
         fields = '__all__'
 
-from django import forms
 
 class AddressForm(forms.Form):
-    full_name = forms.CharField(max_length=100, label='Full Name')
-    phone = forms.CharField(max_length=15, label='Phone Number')
-    address = forms.CharField(widget=forms.Textarea, label='Shipping Address')
-    city = forms.CharField(max_length=50, label='City')
-    postal_code = forms.CharField(max_length=10, label='Postal Code')
+    address = forms.CharField(widget=forms.Textarea(attrs={'rows':3}), label="Address")
+    city = forms.CharField(max_length=100, label="City")
+    state = forms.CharField(max_length=100, label="State")
+    zip_code = forms.CharField(max_length=10, label="Zip Code")
+    phone_number = forms.CharField(max_length=15, label="Phone Number")
+

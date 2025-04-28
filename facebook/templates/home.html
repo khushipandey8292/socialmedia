@@ -27,11 +27,9 @@
 </div>
 </div>
 <div class="row category mt-1 py-3 ms-3 bg-light">
-{% comment %} <div class="row category mt-1 py-3 " style="background-color:rgba(8, 4, 31, 0.58);"> {% endcomment %}
   <div class="fs-3 heading" style="color:dark;">Shop By <b>Categories</b></div>
-  {% for x in cdata %}  <!-- [row,row]-->
+  {% for x in cdata %} 
 <div class="col-lg-2 col-md-4 col-sm-12">
-<!-- start category-->
 <div class="card mt-2">
   <img src="/{{x.cpic}}" style="max-height:150px;"  class="card-img-top"/>
   <div class="card-body">
@@ -44,7 +42,6 @@
      {% endif %}     
   </div>
 </div>
-<!-- end category-->
 </div>
   {% endfor %}
 </div>
