@@ -28,18 +28,15 @@ class UserOTP(models.Model):
         return timezone.now() > self.created_at + timezone.timedelta(minutes=10) 
 
 class Category(models.Model):
-    seller = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True)
+    admin = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True)
     cname=models.CharField(max_length=200,null=True)
     cpic=models.ImageField(upload_to='static/category/',null=True)
     cdate=models.DateField()
+    
     def __str__(self):
         return  self.cname
     
-    def can_be_deleted_by(self, seller):
-        # Only allow the seller to delete if no other seller has products in this category
-        if self.product_set.filter(seller__isnull=False).exclude(seller=seller).exists():
-            return False
-        return True
+    
     
 class Subcategory(models.Model):
     category_name=models.ForeignKey(Category,on_delete=models.CASCADE)

@@ -16,8 +16,11 @@ class Myform(forms.Form):
 class MyProductForm(forms.ModelForm):
     class Meta:
         model = Myproduct
+        fields=['product_category','subcategory_name','veg_name','price','discount_price','product_pic','total_discount','product_quantity','pdate']
         exclude = ['seller']
-
+    pdate = forms.DateField(
+        widget=forms.DateInput(attrs={'type': 'date'})
+    )
 
 from .models import Category, Subcategory
 from datetime import date

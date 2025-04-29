@@ -11,5 +11,4 @@ def send_seller_status_email(email, status):
 
     send_mail(subject, message, from_email, recipient_list)
 
-
-
+ 

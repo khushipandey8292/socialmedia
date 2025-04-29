@@ -4,7 +4,7 @@ from django.contrib.auth import authenticate,login,logout
 from django.shortcuts import  redirect
 import random
 import datetime
-from .forms import AddressForm ,CategoryForm, SubcategoryForm
+from .forms import AddressForm ,CategoryForm, SubcategoryForm, AddressForm 
 from django.core.mail import send_mail
 from django.contrib.auth.decorators import login_required
 from .models import CustomUser,UserOTP,Category,Myproduct,Subcategory,Cart,Myorders
@@ -260,16 +260,16 @@ def product(request):
 
 @login_required
 def add_category(request):
-    if request.user.user_type != 'seller':
+    if request.user.user_type != 'admin':
         return redirect('home')
     
     if request.method == "POST":
         form = CategoryForm(request.POST, request.FILES)
         if form.is_valid():
             category = form.save(commit=False)
-            category.seller = request.user
+            category.admin = request.user
             category.save()
-            return redirect('seller_dashboard')
+            return redirect('admin_dashboard')
     else:
         form = CategoryForm()
     
@@ -278,14 +278,14 @@ def add_category(request):
 
 @login_required
 def add_subcategory(request):
-    if request.user.user_type != 'seller':
-        return HttpResponse("<script>alert('Only sellers can add subcategories');location.href='/'</script>")
+    if request.user.user_type != 'admin':
+        return HttpResponse("<script>alert('Only admin can add subcategories');location.href='/'</script>")
     
     if request.method == 'POST':
         form = SubcategoryForm(request.POST)
         if form.is_valid():
             form.save() 
-            return redirect('seller_dashboard')  
+            return redirect('admin_dashboard')  
     else:
         form = SubcategoryForm()
     
@@ -331,8 +331,11 @@ def delete_product_admin(request, pk):
 
 from django.utils import timezone
 
-@login_required
+# @login_required
 def Mycart(request):
+    if not request.user.is_authenticated:
+        return HttpResponse("<script>alert('Please login first to add items to cart'); location.href='/login/';</script>")
+    
     if request.user.user_type != 'customer':
         return HttpResponse("<script>alert('Only customers can access the cart');location.href='/'</script>")
 
@@ -378,19 +381,24 @@ def cartitem(request):
 
     return render(request, 'cartitem.html', {"cartdata": cartdata})
 
-from .forms import AddressForm 
+
 from io import BytesIO
 from xhtml2pdf import pisa
 from django.template.loader import render_to_string
 import os
 from django.conf import settings
+from django.core.mail import EmailMessage
+from django.http import FileResponse
+from django.utils import timezone
+
+
 def generate_order_pdf(order_list, total_amount):
     if not order_list:
         return None
 
     html = render_to_string('order_receipt.html', {
         'orders': order_list,
-        'user': order_list[0].user,  # use first order's user
+        'user': order_list[0].user,  
         'address': order_list[0].address,
         'city': order_list[0].city,
         'state': order_list[0].state,
@@ -413,8 +421,6 @@ def generate_order_pdf(order_list, total_amount):
 
     return pdf_path
 
-
-
 @login_required
 def myorder(request):
     if request.user.user_type != 'customer':
@@ -432,7 +438,6 @@ def myorder(request):
             cart_items = Cart.objects.filter(user=request.user)
             total_amount = 0
 
-            # Create orders
             order_list = []
             for item in cart_items:
                 order = Myorders.objects.create(
@@ -456,55 +461,24 @@ def myorder(request):
 
             cart_items.delete()
             request.session['cartitem'] = 0
-
-        
             pdf_path = generate_order_pdf(order_list, total_amount)
 
             if pdf_path:
-                with open(pdf_path, 'rb') as pdf_file:
-                    response = HttpResponse(pdf_file.read(), content_type='application/pdf')
-                    response['Content-Disposition'] = f'inline; filename="receipt_{request.user.id}.pdf"'
-                    return response
+                email = EmailMessage(
+                    'Your Order Receipt',
+                    'Thanks for your order. Please find attached your receipt.',
+                    'your_email@gmail.com',
+                    [request.user.email],
+                )
+                email.attach_file(pdf_path)
+                email.send()
+                return FileResponse(open(pdf_path, 'rb'), content_type='application/pdf')
 
             return HttpResponse("<script>alert('Your order has been placed successfully!');location.href='/orderslist/'</script>")
-    
     else:
         form = AddressForm()
-
     return render(request, 'order.html', {'form': form})
 
-
-
-@login_required
-def indexcart(request):
-    if request.user.user_type != 'customer':
-        return HttpResponse("<script>alert('Only customers can add items to cart');location.href='/'</script>")
-
-    if request.GET.get('qt'):
-        qt = int(request.GET.get('qt'))
-        pname = request.GET.get('pname')
-        ppic = request.GET.get('ppic')
-        pw = request.GET.get('pw')
-        price = int(request.GET.get('price'))
-        total_price = qt * price
-
-        if qt > 0:
-            Cart.objects.create(
-                user=request.user,
-                product_name=pname,
-                quantity=qt,
-                price=price,
-                total_price=total_price,
-                product_picture=ppic,
-                pw=pw,
-                added_date=timezone.now().date()
-            )
-            request.session['cartitem'] = Cart.objects.filter(user=request.user).count()
-            return HttpResponse("<script>alert('Your item was added in cart');location.href='/index/'</script>")
-        else:
-            return HttpResponse("<script>alert('Add product quantity to your cart');location.href='/index/'</script>")
-
-    return render(request, 'indexcart.html')
 
 
 @login_required
@@ -529,14 +503,13 @@ def orderslist(request):
     })
 
 
-
 @login_required
 def delete_category(request, cid):
-    category = get_object_or_404(Category, id=cid, seller=request.user)
-    
-    if request.user.user_type != 'seller':
+    if request.user.user_type != 'admin':
         return HttpResponse("<script>alert('Unauthorized access');location.href='/'</script>")
     
+    category = get_object_or_404(Category, id=cid,admin=request.user)
     category.delete()
-    return redirect('seller_dashboard')
+    
+    return redirect('admin_dashboard')
 
