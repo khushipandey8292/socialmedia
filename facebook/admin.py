@@ -4,7 +4,7 @@ from .models import CustomUser,UserOTP, Category,Myproduct,Subcategory,Cart,Myor
 
 class CustomUserAdmin(UserAdmin):
     model = CustomUser
-    list_display = ('id','username', 'email', 'user_type', 'is_verified', 'is_staff', 'is_superuser')
+    list_display = ('id','username', 'email', 'user_type', 'is_verified', 'is_active','is_staff', 'is_superuser')
     list_filter = ('user_type', 'is_verified', 'is_staff')
     search_fields = ('username', 'email')
     ordering = ('username',)

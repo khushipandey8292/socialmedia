@@ -5,9 +5,14 @@
     <div class="container">
         <div class="row d-flex justify-content-center align-items-center">
             <div class="col-12 col-md-5 col-lg-7 col-xl-6">
-                <div class="card" style="border-radius: 10px; height: 550px; overflow: hidden;">
+                <div class="card" style="border-radius: 10px; height: 600px; overflow: hidden;">
                     <div class="card-body p-5">
               <h2 class="text-uppercase text-center mb-5"><u>LOGIN</u></h2>
+              {% if messages %}
+              {% for message in messages %}
+                  <div class="alert alert-info text-center">{{ message }}</div>
+              {% endfor %}
+              {% endif %}
             <form action="" method="post">
               {% csrf_token %}
                 <div data-mdb-input-init class="form-outline mb-4">

@@ -8,8 +8,10 @@ class CustomUser(AbstractUser):
         ('seller', 'Seller'),
         ('customer', 'Customer'),
     )
+    email = models.EmailField(unique=True)
     user_type = models.CharField(max_length=10, choices=USER_ROLES)
     is_verified = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=False) 
     phone = models.CharField(max_length=15, blank=True, null=True)
     address = models.TextField(blank=True, null=True)  
     def __str__(self):

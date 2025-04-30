@@ -8,6 +8,13 @@
                 <div class="card" style="border-radius: 10px; height: auto; overflow: hidden;">
                     <div class="card-body p-5">
                         <h2 class="text-capitalize text-center mb-4"><u>User Registration</u></h2>
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }} text-center">
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        {% endif %}
                         <form method="post">
                             {% csrf_token %}
                             <div class="form-outline mb-3">

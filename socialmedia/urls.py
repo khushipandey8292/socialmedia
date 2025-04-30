@@ -20,9 +20,4 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('',include('facebook.urls')),
     path('captcha/',include('captcha.urls')),
-    # path('',views.home,name='home'),
-    # path('signup/',views.signup,name='signup'),
-    # path('login/',views.user_login,name='userlogin'),
-    # path('dashboard/',views.dashboard,name='dashboard'),
-    # path('user_logout/',views.user_logout,name='logout'),
 ]
