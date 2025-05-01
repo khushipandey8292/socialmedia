@@ -1,7 +1,5 @@
 {% extends 'base.html'%}
-
 {% load static %}
-
 {% block content %}
 <div class="text-center fs-3">
     <b style="color:rgb(238, 235, 216);">Our Cart Items <i class="fa-solid fa-cart-shopping fa-bounce"></i></b>
@@ -82,7 +80,11 @@
                                 <td>{{i.price}}/-</td>
                                 <td class="subtotal">{{i.total_price}}/-</td>
                                 <td>{{i.added_date}}</td>
-                                <td><a href="/cartitem?cid={{i.id}}" class="btn  btn-dark" style="color:black;">Remove <i class="fa-solid fa-trash"></i></a></td>
+                                <td>
+                                    <a href="{% url 'remove_from_cart' i.id %}" class="btn btn-dark" style="color:black;" onclick="return confirm('Are you sure you want to remove this item from your cart?')">
+                                        Remove <i class="fa-solid fa-trash"></i>
+                                    </a>
+                                </td>                                
                             </tr>
                         </table>
                     </div>

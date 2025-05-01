@@ -16,7 +16,7 @@ class Myform(forms.Form):
 class MyProductForm(forms.ModelForm):
     class Meta:
         model = Myproduct
-        fields=['product_category','subcategory_name','veg_name','price','discount_price','product_pic','total_discount','product_quantity','pdate']
+        fields=['product_category','subcategory_name','veg_name','price','discount_price','product_pic','total_discount','product_quantity','pdate','stock']
         exclude = ['seller']
     pdate = forms.DateField(
         widget=forms.DateInput(attrs={'type': 'date'})

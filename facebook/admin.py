@@ -31,7 +31,7 @@ class subcategoryAdmin(admin.ModelAdmin):
 class myproductAdmin(admin.ModelAdmin):
     list_display = ('id','seller','product_category',
                     'subcategory_name', 'veg_name','price','discount_price',
-                    'product_pic','total_discount','product_quantity','pdate')
+                    'product_pic','total_discount','product_quantity','pdate','stock')
 
 
 @admin.register(Cart)

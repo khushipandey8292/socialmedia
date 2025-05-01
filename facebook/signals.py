@@ -1,4 +1,4 @@
-from django.db.models.signals import pre_delete
+from django.db.models.signals import pre_delete,post_save
 from django.dispatch import receiver
 from django.core.mail import send_mail
 from django.conf import settings
@@ -29,3 +29,17 @@ def notify_sellers_on_category_delete(sender, instance, **kwargs):
                 print(f"Error sending email to {seller.email}: {e}")
         else:
             print(f"Seller {seller.username} does not have an email address.")
+
+
+@receiver(post_save, sender=Myproduct)
+def check_stock_zero(sender, instance, **kwargs):
+    if instance.stock == 0:
+        send_mail(
+            subject='Out of Stock Alert',
+            message=f'Your product "{instance.veg_name}" is now out of stock.',
+            from_email=settings.DEFAULT_FROM_EMAIL ,
+            recipient_list=[instance.seller.email],
+        )
+
+
+

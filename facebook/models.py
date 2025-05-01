@@ -59,6 +59,7 @@ class Myproduct(models.Model):
     total_discount=models.IntegerField()
     product_quantity=models.CharField(max_length=200)
     pdate=models.DateField()
+    stock=models.PositiveIntegerField(default=0)
     
 class Cart(models.Model):
     user=models.ForeignKey(CustomUser,on_delete=models.CASCADE)

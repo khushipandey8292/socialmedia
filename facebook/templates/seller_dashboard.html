@@ -18,6 +18,7 @@
           <h5 style="color:rgb(224, 212, 134);">{{ product.veg_name }}</h5>
           <p style="color:rgb(224, 212, 134);">₹{{ product.discount_price }} <s>₹{{ product.price }}</s></p>
           <p style="color:rgb(224, 212, 134);">Qty: {{ product.product_quantity }}</p>
+          <p style="color:rgb(224, 212, 134);">stock: {{ product.stock }}</p>
           <a href="{% url 'edit_product' product.pk %}" class="btn btn-primary btn-sm">
             <i class="fa fa-edit"></i> Edit
         </a>

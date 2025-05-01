@@ -23,11 +23,9 @@ urlpatterns = [
     path('seller/delete/<int:pk>/', views.delete_product, name='delete_product'),
     path('delete/<int:pk>/', views.delete_product_admin, name='delete_product_admin'),
     path('mycart/', views.Mycart, name='mycart'),
-    path('cartitem/', views.cartitem, name='cartitem'),
-    # path('indexcart/', views.indexcart, name='indexcart'),
+    path('cartitem/', views.cartitem, name='cartitem'), 
     path('myorder/', views.myorder, name='myorder'),
     path('orderslist/', views.orderslist, name='orderslist'), 
     path('delete-category/<int:cid>/', views.delete_category, name='delete_category'),
-    # path('place-order/', views.place_order, name='myorder'),
 ]
 

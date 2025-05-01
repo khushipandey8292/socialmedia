@@ -313,7 +313,6 @@ def add_subcategory(request):
     
     return render(request, 'subcategory.html', {'form': form})
 
-
 @login_required
 @seller_required
 def add_product(request):
@@ -353,7 +352,6 @@ def delete_product_admin(request, pk):
 
 from django.utils import timezone
 
-# @login_required
 def Mycart(request):
     if not request.user.is_authenticated:
         return HttpResponse("<script>alert('Please login first to add items to cart'); location.href='/login/';</script>")
@@ -362,31 +360,37 @@ def Mycart(request):
         return HttpResponse("<script>alert('Only customers can access the cart');location.href='/'</script>")
 
     if request.method == "GET" and request.GET.get('qt'):
-        qt = int(request.GET.get('qt'))
-        pname = request.GET.get('pname')
-        ppic = request.GET.get('ppic')
-        pw = request.GET.get('pw')
-        price = int(request.GET.get('price'))
-        total_price = qt * price
+            qt = int(request.GET.get('qt',0))
+            pname = request.GET.get('pname')
+            ppic = request.GET.get('ppic')
+            pw = request.GET.get('pw')
+            price = int(request.GET.get('price'))
+            total_price = qt * price
+            product = Myproduct.objects.get(veg_name=pname)
+            if qt > product.stock:
+                return HttpResponse(f"<script>alert('Only {product.stock} item(s) in stock'); location.href='/product/';</script>")
+            if qt <= 0:
+                return HttpResponse("<script>alert('Add a valid product quantity'); location.href='/product/';</script>")
+            if qt > 0:
+                Cart.objects.create(
+                    user=request.user,
+                    product_name=pname,
+                    quantity=qt,
+                    price=price,
+                    total_price=total_price,
+                    product_picture=ppic,
+                    pw=pw,
+                    added_date=timezone.now().date()
+                )
+                request.session['cartitem'] = Cart.objects.filter(user=request.user).count()
+                product.stock -= qt
+                product.save()
 
-        if qt > 0:
-            Cart.objects.create(
-                user=request.user,
-                product_name=pname,
-                quantity=qt,
-                price=price,
-                total_price=total_price,
-                product_picture=ppic,
-                pw=pw,
-                added_date=timezone.now().date()
-            )
-            request.session['cartitem'] = Cart.objects.filter(user=request.user).count()
-            return HttpResponse("<script>alert('Your item was added successfully');location.href='/product/'</script>")
-        else:
-            return HttpResponse("<script>alert('Add product quantity to your cart');location.href='/product/'</script>")
+                return HttpResponse("<script>alert('Your item was added successfully');location.href='/product/'</script>")
+            else:
+                return HttpResponse(f"<script>alert('Add product to your cart'); location.href='/product/';</script>")
 
     return render(request, 'mycart.html')
-
 
 @login_required
 def cartitem(request):
@@ -411,7 +415,7 @@ import os
 from django.conf import settings
 from django.core.mail import EmailMessage
 from django.http import FileResponse
-from django.utils import timezone
+
 
 
 def generate_order_pdf(order_list, total_amount):
